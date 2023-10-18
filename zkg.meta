@@ -1,0 +1,6 @@
+[package]
+script_dir = scripts
+description = A module that extracts files from network and submit them to sandbox .
+credits = Christos Anagnostopoulos
+tags = sandbox, file 
+version = 0.1
