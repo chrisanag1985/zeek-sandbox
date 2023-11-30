@@ -186,7 +186,7 @@ function lookup_info_store(indicator: string, verdict: SandBox::verdict_record)
     if (|found| > 0){
         for (i in found)
         {
-            if (verdict$verdict == SandBox::BENIGN && delete_benign)
+            if ((verdict$verdict == SandBox::BENIGN || verdict$verdict == SandBox::UNKNOWN )&& delete_benign)
                 Broker::publish(Cluster::worker_topic,delete_file,info_store[i]);
             delete info_store[i];
         }
