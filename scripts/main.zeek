@@ -160,8 +160,6 @@ function lookup_info_store(indicator: string, verdict: SandBox::verdict_record)
             {
                 case SandBox::BENIGN:
                     add found[index]; 
-                    if (delete_benign)
-                        Broker::publish(Cluster::worker_topic,delete_file,index);
                     break;
                 case SandBox::MALICIOUS:
             
@@ -188,6 +186,8 @@ function lookup_info_store(indicator: string, verdict: SandBox::verdict_record)
     if (|found| > 0){
         for (i in found)
         {
+            if (verdict$verdict == SandBox::BENIGN && delete_benign)
+                Broker::publish(Cluster::worker_topic,delete_file,info_store[i]);
             delete info_store[i];
         }
         delete hash_times_rechecked[indicator];
