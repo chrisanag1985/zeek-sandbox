@@ -186,7 +186,7 @@ function lookup_info_store(indicator: string, verdict: SandBox::verdict_record)
     if (|found| > 0){
         for (i in found)
         {
-            if ((verdict$verdict == SandBox::BENIGN || verdict$verdict == SandBox::UNKNOWN )&& delete_benign)
+            if ((verdict$verdict == SandBox::BENIGN || verdict$verdict == SandBox::UNKNOWN ) && delete_benign)
                 Broker::publish(Cluster::worker_topic,delete_file,info_store[i]);
             delete info_store[i];
         }
@@ -263,7 +263,7 @@ event delete_file(info: SandBox::Info)
         return;
 
     local del_command : Exec::Command;
-    del_command = [$cmd=fmt("rm -f ./extract_files/%s",info$f$info$filename)];
+    del_command = [$cmd=fmt("rm -f ./extract_files/%s",info$f$info$extracted)];
 
     when [del_command]  ( local result = Exec::run($cmd=del_command))
     {
