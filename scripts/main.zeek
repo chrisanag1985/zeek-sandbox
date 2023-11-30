@@ -13,7 +13,7 @@
 
 module SandBox;
 
-## ADD IS CLUSTER IS ENABLED
+## ADD IS CLUSTER  ENABLED
 
 export {
 
@@ -32,7 +32,7 @@ export {
 
    option cache_expire_interval = 48hr;
 
-   option delete_benign = F;
+   option delete_benign = T;
 
    const default_verdict: SandBox::VERDICT =  SandBox::BENIGN  &redef; 
 
@@ -62,6 +62,7 @@ global _default_verdict : SandBox::verdict_record;
 global send_file_to_sandbox:  event(info: SandBox::Info);
 global send_hash_to_sandbox:  event(info: SandBox::Info);
 global recheck_for_verdict: event();
+global delete_file: event(info: SandBox::Info);
 
 
 
@@ -159,6 +160,8 @@ function lookup_info_store(indicator: string, verdict: SandBox::verdict_record)
             {
                 case SandBox::BENIGN:
                     add found[index]; 
+                    if (delete_benign)
+                        Broker::publish(Cluster::worker_topic,delete_file,index);
                     break;
                 case SandBox::MALICIOUS:
             
@@ -253,6 +256,21 @@ event recheck_for_verdict(){
 }
 
 
+# Running in WORKERS
+event delete_file(info: SandBox::Info)
+{
+    if ( Cluster::node != info$node_name)
+        return;
+
+    local del_command : Exec::Command;
+    del_command = [$cmd=fmt("rm -f ./extract_files/%s",info$f$info$filename)];
+
+    when [del_command]  ( local result = Exec::run($cmd=del_command))
+    {
+        #Reporter::info(fmt("Delete file %s",info$f$info$filename));
+    }
+}
+
 
 # Running in WORKERS
 event send_file_to_sandbox(info: SandBox::Info)
@@ -295,6 +313,7 @@ event send_hash_to_sandbox(info: SandBox::Info)
         return;
     }
 
+
     #Reporter::info(fmt("Running on: %s Got hash: %s from worker: %s",Cluster::node,hash,info$node_name));
     
     when [info,index] (local v = _send_hash_to_sandbox(info$indicator))
@@ -316,7 +335,7 @@ event send_hash_to_sandbox(info: SandBox::Info)
 
              case SandBox::PENDING:
 
-                #Reporter::warning(fmt("PIending state for hash: %s",info$indicator));
+                #Reporter::warning(fmt("Pending state for hash: %s",info$indicator));
                 index = [ $uid=info$conn$uid , $indicator=info$indicator , $fuid = info$f$id];
                 info_store[index] = info;
                 break;
@@ -324,6 +343,8 @@ event send_hash_to_sandbox(info: SandBox::Info)
              case SandBox::BENIGN:
 
                 distributed_cache[info$indicator] = v;
+                if (delete_benign)
+                    Broker::publish(Cluster::worker_topic,delete_file,info);
                 break;
         
              default:
