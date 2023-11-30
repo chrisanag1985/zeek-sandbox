@@ -388,6 +388,14 @@ event file_state_remove(f: fa_file){
             {
                 do_notice(info,distributed_cache[info$indicator]);
             }
+
+            if (distributed_cache[info$indicator]$verdict == SandBox::BENIGN)
+            {
+                if (delete_benign)
+                    Broker::publish(Cluster::worker_topic,delete_file,info);
+            }
+
+
             return;
        }
        Cluster::publish_hrw(Cluster::proxy_pool,f$info$sha256,send_hash_to_sandbox,info);
