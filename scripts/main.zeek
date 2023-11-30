@@ -259,6 +259,9 @@ event recheck_for_verdict(){
 # Running in WORKERS
 event delete_file(info: SandBox::Info)
 {
+    # add error flag in the arguments of the event
+    # in case of error delete the same end of filename
+    # because it exports it in many different files
     if ( Cluster::node != info$node_name)
         return;
 
@@ -346,7 +349,7 @@ event send_hash_to_sandbox(info: SandBox::Info)
 
                 distributed_cache[info$indicator] = v;
                 if (delete_benign)
-                    Broker::publish(Cluster::worker_topic,delete_file,info);
+                    event delete_file(info);
                 break;
         
              default:
