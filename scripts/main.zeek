@@ -286,6 +286,8 @@ event send_file_to_sandbox(info: SandBox::Info)
             if (!b)
             {
                 Reporter::warning(fmt("Error for hash: %s file: %s with file type: %s",info$indicator,info$f$info$extracted,info$indicator_type));
+                if (delete_benign)
+                    Broker::publish(Cluster::worker_topic,delete_file,info);
             }
             else
             {    
