@@ -289,7 +289,8 @@ event send_file_to_sandbox(info: SandBox::Info)
             if (!b)
             {
                 Reporter::warning(fmt("Error for hash: %s file: %s with file type: %s",info$indicator,info$f$info$extracted,info$indicator_type));
-                event delete_file(info);
+                if (delete_benign)
+                    event delete_file(info);
             }
             else
             {    
