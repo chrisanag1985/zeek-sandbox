@@ -161,8 +161,8 @@ function lookup_info_store(indicator: string, verdict: SandBox::verdict_record)
                 case SandBox::BENIGN:
                     add found[index]; 
                     break;
+
                 case SandBox::MALICIOUS:
-            
                     # Raise notice
                     do_notice(info_store[index],verdict);
                     add found[index]; 
@@ -349,7 +349,7 @@ event send_hash_to_sandbox(info: SandBox::Info)
 
                 distributed_cache[info$indicator] = v;
                 if (delete_benign)
-                    event delete_file(info);
+                    Broker::publish(Cluster::worker_topic,delete_file,info);
                 break;
         
              default:
@@ -397,7 +397,7 @@ event file_state_remove(f: fa_file){
             if (distributed_cache[info$indicator]$verdict == SandBox::BENIGN)
             {
                 if (delete_benign)
-                    Broker::publish(Cluster::worker_topic,delete_file,info);
+                    event delete_file(info);
             }
 
 
